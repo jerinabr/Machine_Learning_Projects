@@ -7,9 +7,11 @@
             "args": [
                 "-fdiagnostics-color=always",
                 "-g",
+                "${fileDirname}/../MNISTReader/mnistreader.cpp",
                 "${file}",
                 "-o",
-                "${fileDirname}/${fileBasenameNoExtension}"
+                "${fileDirname}/${fileBasenameNoExtension}",
+                "-std=c++11"
             ],
             "options": {
                 "cwd": "${fileDirname}"
