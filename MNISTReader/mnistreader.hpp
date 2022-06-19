@@ -1,27 +1,22 @@
 #pragma once
 
+#include <vector>
 class mnistreader {
     private:
-        double** fullTrainImgData;
-        int* fullTrainLblData;
+        struct mnistDigit {
+            int label;
+            double pixels[784];
+        };
 
-        double** fullTestImgData;
-        int* fullTestLblData;
+        std::vector<mnistDigit> fullTrainData;
+        std::vector<mnistDigit> fullTestData;
 
-        int fullTrainSize;
-        int fullTestSize;
-
-        bool numInList(int n, int* list, int size);
-        void cloneImg(double* target, double* source);
+        int trainSize;
+        int testSize;
     
     public:
-        double** trainImgData;
-        int* trainLblData;
-        int trainSize;
-
-        double** testImgData;
-        int* testLblData;
-        int testSize;
+        std::vector<mnistDigit> trainData;
+        std::vector<mnistDigit> testData;
 
         static const int imgSize = 784;
 
@@ -31,9 +26,8 @@ class mnistreader {
             const char* testImgLoc,
             const char* testLblLoc,
             int nTrain,
-            int nTest,
-            bool normalize
+            int nTest
         );
 
-        void selectData(int* list, int size);
+        void selectData(std::vector<int> list);
 };

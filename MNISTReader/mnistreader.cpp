@@ -1,144 +1,101 @@
 #include <iostream>
 #include <fstream>
+#include <algorithm>
 #include "mnistreader.hpp"
 
-using namespace std;
-
 #define NUM_TRAINING 60000
-#define NUM_TEST 10000
+#define NUM_TESTING 10000
 
-bool mnistreader::numInList(int n, int* list, int size) {
-    for (int i = 0; i < size; ++i) {
-        if (n == list[i]) {
-            return true;
+mnistreader::mnistreader(const char* trainImgLoc, const char* trainLblLoc, const char* testImgLoc, const char* testLblLoc, int nTrain, int nTest) {
+    // Initialize training and testing data vectors
+    trainSize = (nTrain ? nTrain : NUM_TRAINING);
+    testSize = (nTest ? nTest : NUM_TESTING);
+
+    fullTrainData.reserve(NUM_TRAINING);
+    fullTestData.reserve(NUM_TESTING);
+
+    trainData.reserve(trainSize);
+    testData.reserve(testSize);
+
+    // Read training data from image and label files
+    std::ifstream trainImgFile(trainImgLoc, std::ios::binary);
+    std::ifstream trainLblFile(trainLblLoc, std::ios::binary);
+    if (trainImgFile.is_open() && trainLblFile.is_open()) {
+        // Skip file metadata
+        trainImgFile.seekg(16);
+        trainLblFile.seekg(8);
+
+        unsigned char* tempLbl = new unsigned char[1];
+        unsigned char* tempImg = new unsigned char[imgSize];
+        for (int i = 0; i < NUM_TRAINING; ++i) {
+            mnistDigit digit;
+
+            // Read file data into placeholders
+            trainLblFile.read((char*) tempLbl, 1);
+            trainImgFile.read((char*) tempImg, imgSize);
+
+            // Use placeholder values for digit struct
+            digit.label = (int) *tempLbl;
+            for (int j = 0; j < imgSize; ++j) {
+                digit.pixels[j] = (double) tempImg[j] / 255.0; // Normalize pixel values
+            }
+
+            fullTrainData.push_back(digit);
         }
     }
-    return false;
-}
-
-void mnistreader::cloneImg(double* target, double* source) {
-    for (int i = 0; i < imgSize; ++i) {
-        target[i] = source[i];
-    }
-}
-
-mnistreader::mnistreader(const char* trainImgLoc, const char* trainLblLoc, const char* testImgLoc, const char* testLblLoc, int nTrain, int nTest, bool normalize) {
-    // Initialize training data arrays
-    fullTrainSize = (nTrain == 0 ? NUM_TRAINING : nTrain);
-    trainSize = fullTrainSize;
-
-    fullTrainImgData = (double**) malloc(fullTrainSize * sizeof(double*));
-    trainImgData = (double**) malloc(fullTrainSize * sizeof(double*));
-    for (int i = 0; i < fullTrainSize; ++i) {
-        fullTrainImgData[i] = (double*) malloc(imgSize * sizeof(double));
-        trainImgData[i] = (double*) malloc(imgSize * sizeof(double));
-    }
-
-    fullTrainLblData = (int*) malloc(fullTrainSize * sizeof(int));
-    trainLblData = (int*) malloc(fullTrainSize * sizeof(int));
-
-    // Initialize test data arrays
-    fullTestSize = (nTest == 0 ? NUM_TEST : nTest);
-    testSize = fullTestSize;
-
-    fullTestImgData = (double**) malloc(fullTestSize * sizeof(double*));
-    testImgData = (double**) malloc(fullTestSize * sizeof(double*));
-    for (int i = 0; i < fullTestSize; ++i) {
-        fullTestImgData[i] = (double*) malloc(imgSize * sizeof(double));
-        testImgData[i] = (double*) malloc(imgSize * sizeof(double));
-    }
-
-    fullTestLblData = (int*) malloc(fullTestSize * sizeof(int));
-    testLblData = (int*) malloc(fullTestSize * sizeof(int));
-
-    // Initialize temporary data vars
-    unsigned char* temp = (unsigned char*) malloc(1);
-    double val;
-
-    // Read training images
-    ifstream trainImgFile(trainImgLoc, ifstream::binary);
-    trainImgFile.seekg(16); // Skip metadata
-
-    for (int i = 0; i < fullTrainSize * imgSize; ++i) {
-        trainImgFile.read((char*) temp, 1);
-
-        val = (normalize ? *temp / 255.0 : (double) *temp);
-
-        fullTrainImgData[i / imgSize][i % imgSize] = val;
-        trainImgData[i / imgSize][i % imgSize] = val;
-    }
-
     trainImgFile.close();
-
-    // Read training labels
-    ifstream trainLblFile(trainLblLoc, ifstream::binary);
-    trainLblFile.seekg(8); // Skip metadata
-
-    for (int i = 0; i < fullTrainSize; ++i) {
-        trainLblFile.read((char*) temp, 1);
-
-        fullTrainLblData[i] = (int) *temp;
-        trainLblData[i] = (int) *temp;
-    }
-
     trainLblFile.close();
 
-    // Read test images
-    ifstream testImgFile(testImgLoc, ifstream::binary);
-    testImgFile.seekg(16); // Skip metadata
+    // Read testing data from image and label files
+    std::ifstream testImgFile(testImgLoc, std::ios::binary);
+    std::ifstream testLblFile(testLblLoc, std::ios::binary);
+    if (testImgFile.is_open() && testLblFile.is_open()) {
+        // Skip file metadata
+        testImgFile.seekg(16);
+        testLblFile.seekg(8);
 
-    for (int i = 0; i < fullTestSize * imgSize; ++i) {
-        testImgFile.read((char*) temp, 1);
+        unsigned char* tempLbl = new unsigned char[1];
+        unsigned char* tempImg = new unsigned char[imgSize];
+        for (int i = 0; i < NUM_TESTING; ++i) {
+            mnistDigit digit;
 
+            // Read file data into placeholders
+            testLblFile.read((char*) tempLbl, 1);
+            testImgFile.read((char*) tempImg, imgSize);
 
-        val = (normalize ? *temp / 255.0 : (double) *temp);
+            // Use placeholder values for digit struct
+            digit.label = (int) *tempLbl;
+            for (int j = 0; j < imgSize; ++j) {
+                digit.pixels[j] = (double) tempImg[j] / 255.0; // Normalize pixel values
+            }
 
-        fullTestImgData[i / imgSize][i % imgSize] = val;
-        testImgData[i / imgSize][i % imgSize] = val;
+            fullTestData.push_back(digit);
+        }
     }
-
     testImgFile.close();
-
-    // Read test labels
-    ifstream testLblFile(testLblLoc, ifstream::binary);
-    testLblFile.seekg(8); // Skip metadata
-
-    for (int i = 0; i < fullTestSize; ++i) {
-        testLblFile.read((char*) temp, 1);
-
-        fullTestLblData[i] = (int) *temp;
-        testLblData[i] = (int) *temp;
-    }
-
     testLblFile.close();
-
-    free(temp);
 }
 
-void mnistreader::selectData(int* list, int size) {
+void mnistreader::selectData(std::vector<int> list) {
     // Modify training data
-    {
-        int j = 0;
-        for (int i = 0; i < fullTrainSize; ++i) {
-            if (numInList(fullTrainLblData[i], list, size)) {
-                cloneImg(trainImgData[j], fullTrainImgData[i]);
-                trainLblData[j] = fullTrainLblData[i];
-                ++j;
-            }
+    int numSelected = 0;
+    for (auto&& digit : fullTrainData) {
+        // Check if the digit is in the list of digits
+        if (std::find(list.begin(), list.end(), digit.label) != list.end()) {
+            // Add digit to the training whitelist
+            trainData.push_back(digit);
+            if (++numSelected == trainSize) break;
         }
-        trainSize = j;
     }
 
     // Modify testing data
-    {
-        int j = 0;
-        for (int i = 0; i < fullTestSize; ++i) {
-            if (numInList(fullTestLblData[i], list, size)) {
-                cloneImg(testImgData[j], fullTestImgData[i]);
-                testLblData[j] = fullTestLblData[i];
-                ++j;
-            }
+    numSelected = 0;
+    for (auto&& digit : fullTestData) {
+        // Check if the digit is in the list of digits
+        if (std::find(list.begin(), list.end(), digit.label) != list.end()) {
+            // Add digit to the testing whitelist
+            testData.push_back(digit);
+            if (++numSelected == testSize) break;
         }
-        testSize = j;
     }
 }
