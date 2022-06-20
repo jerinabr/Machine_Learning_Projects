@@ -1,4 +1,4 @@
-# Machine_Learning_Projects
+# Machine Learning Projects
 
 This is a collection of machine learning projects I worked on using C++ or Python.
 
