@@ -54,19 +54,17 @@ mnistreader::mnistreader(const char* trainImgLoc, const char* trainLblLoc, const
         testImgFile.seekg(16);
         testLblFile.seekg(8);
 
-        unsigned char* tempLbl = new unsigned char[1];
-        unsigned char* tempImg = new unsigned char[imgSize];
         for (int i = 0; i < NUM_TESTING; ++i) {
             mnistDigit digit;
 
-            // Read file data into placeholders
-            testLblFile.read((char*) tempLbl, 1);
-            testImgFile.read((char*) tempImg, imgSize);
+            // Read label data into digit struct
+            unsigned char tempLbl = testLblFile.get();
+            digit.label = (int) tempLbl;
 
-            // Use placeholder values for digit struct
-            digit.label = (int) *tempLbl;
+            // Read pixel data into digit struct
             for (int j = 0; j < imgSize; ++j) {
-                digit.pixels[j] = (double) tempImg[j] / 255.0; // Normalize pixel values
+                unsigned char tempPixel = testImgFile.get();
+                digit.pixels[j] = (double) tempPixel / 255.0; // Normalize pixel values
             }
 
             fullTestData.push_back(digit);

@@ -8,7 +8,7 @@
 using namespace std;
 
 const double ALPHA = 0.02; // Learning rate
-int trainingPasses = 200; // Number of training passes
+int trainingPasses = 20; // Number of training passes
 vector<int> testNums = {2, 6}; // Numbers to classify
 bool writeToFile = false; // Whether or not to write training weights to a csv file
 
@@ -18,12 +18,12 @@ mnistreader mnist(
     "../MNISTDataset/trainLabels",
     "../MNISTDataset/testImages",
     "../MNISTDataset/testLabels",
-    1000, // Number of training data to use
-    30 // Number of testing data to use
+    4000, // Number of training data to use
+    1000 // Number of testing data to use
 );
 
 // Define weights and bias
-double* w = new double[mnist.imgSize];
+double w[mnist.imgSize];
 double b;
 
 // Function used to compute the dot product of the weight matrix and the pixel data

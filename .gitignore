@@ -1,1 +1,9 @@
+# For ignoring executables
+*
+!*.*
+!*/
+
+# For ignoring other specific things
 **/.DS_Store
+**/.dSYM
+.vscode/*
