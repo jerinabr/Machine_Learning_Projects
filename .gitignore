@@ -5,5 +5,5 @@
 
 # For ignoring other specific things
 **/.DS_Store
-**/.dSYM
-.vscode/*
+**/*.dSYM
+.vscode/
