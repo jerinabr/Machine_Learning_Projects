@@ -25,19 +25,16 @@ mnistreader::mnistreader(const char* trainImgLoc, const char* trainLblLoc, const
         trainImgFile.seekg(16);
         trainLblFile.seekg(8);
 
-        unsigned char* tempLbl = new unsigned char[1];
-        unsigned char* tempImg = new unsigned char[imgSize];
         for (int i = 0; i < NUM_TRAINING; ++i) {
             mnistDigit digit;
 
-            // Read file data into placeholders
-            trainLblFile.read((char*) tempLbl, 1);
-            trainImgFile.read((char*) tempImg, imgSize);
+            // Read label data into digit struct
+            digit.label = trainLblFile.get();
 
-            // Use placeholder values for digit struct
-            digit.label = (int) *tempLbl;
+            // Read pixel data into digit struct
             for (int j = 0; j < imgSize; ++j) {
-                digit.pixels[j] = (double) tempImg[j] / 255.0; // Normalize pixel values
+                unsigned char tempPixel = trainImgFile.get();
+                digit.pixels[j] = (double) tempPixel / 255.0; // Normalize pixel values
             }
 
             fullTrainData.push_back(digit);
@@ -58,8 +55,7 @@ mnistreader::mnistreader(const char* trainImgLoc, const char* trainLblLoc, const
             mnistDigit digit;
 
             // Read label data into digit struct
-            unsigned char tempLbl = testLblFile.get();
-            digit.label = (int) tempLbl;
+            digit.label = testLblFile.get();
 
             // Read pixel data into digit struct
             for (int j = 0; j < imgSize; ++j) {
